@@ -26,12 +26,10 @@ export default function PokerTable() {
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl flex flex-col gap-6">
-        {/* Title */}
         <h1 className="text-center text-white text-2xl font-bold tracking-widest uppercase">
           Poker Equity Trainer
         </h1>
 
-        {/* Main table */}
         <div
           className="relative rounded-[80px] border-8 border-amber-900 shadow-2xl overflow-hidden"
           style={{
@@ -39,15 +37,12 @@ export default function PokerTable() {
             minHeight: '480px',
           }}
         >
-          {/* Inner table felt border */}
           <div className="absolute inset-4 rounded-[72px] border-2 border-green-700/40 pointer-events-none" />
 
-          {/* Top player */}
           <div className="absolute top-6 left-0 right-0 flex justify-center">
             <PlayerHand player={players[0]} position="top" isCalculating={isCalculating} />
           </div>
 
-          {/* Center: street label + community cards */}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
             <span className="text-green-200/70 text-xs font-semibold tracking-widest uppercase">
               {STREET_LABELS[street]}
@@ -55,20 +50,17 @@ export default function PokerTable() {
             <CommunityCards cards={communityCards} />
           </div>
 
-          {/* Bottom two players */}
           <div className="absolute bottom-6 left-0 right-0 flex justify-around px-6">
             <PlayerHand player={players[1]} position="bottom-left" isCalculating={isCalculating} />
             <PlayerHand player={players[2]} position="bottom-right" isCalculating={isCalculating} />
           </div>
         </div>
 
-        {/* Equity bar */}
         <EquityBar
-          players={players.map((p) => ({ name: p.name, equity: p.equity }))}
+          players={players.map((p) => ({ name: p.name, equity: p.equity ?? 0 }))}
           isCalculating={isCalculating}
         />
 
-        {/* Buttons */}
         <div className="flex gap-4 justify-center">
           <button
             onClick={dealNext}

@@ -1,9 +1,11 @@
 import { useState, useCallback } from 'react'
-import { Card, GameState, Street } from '../types/poker'
+import type { Card, GameState, Street, Player } from '../types/poker'
 import { calculateEquity } from '../api/equity'
 
-const SUITS = ['s', 'h', 'd', 'c'] as const
-const RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'] as const
+const SUITS: Card['suit'][] = ['s', 'h', 'd', 'c']
+const RANKS: Card['rank'][] = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+
+const PLAYER_NAMES = ['Player 1', 'Player 2', 'Player 3']
 
 function createDeck(): Card[] {
   const deck: Card[] = []
@@ -24,13 +26,13 @@ function shuffle<T>(array: T[]): T[] {
   return arr
 }
 
-function dealInitialState() {
+function dealInitialState(): { players: Player[]; deck: Card[] } {
   const deck = shuffle(createDeck())
-  const players: Card[][] = [
-    [deck.pop()!, deck.pop()!],
-    [deck.pop()!, deck.pop()!],
-    [deck.pop()!, deck.pop()!],
-  ]
+  const players: Player[] = PLAYER_NAMES.map((name) => ({
+    name,
+    cards: [deck.pop()!, deck.pop()!],
+    equity: undefined,
+  }))
   return { players, deck }
 }
 
@@ -43,7 +45,6 @@ const CARDS_TO_DEAL: Record<Street, number> = {
 }
 
 export function usePokerGame() {
-  // Lazy initialization - only compute once on mount
   const [initialData] = useState(dealInitialState)
   const [state, setState] = useState<GameState>({
     players: initialData.players,
@@ -54,13 +55,19 @@ export function usePokerGame() {
   const [remainingDeck, setRemainingDeck] = useState<Card[]>(initialData.deck)
 
   const fetchEquity = useCallback(
-    async (players: Card[][], board: Card[]) => {
+    async (players: Player[], board: Card[]) => {
       setState((s) => ({ ...s, isCalculating: true }))
       try {
-        const result = await calculateEquity(players, board)
+        const result = await calculateEquity(
+          players.map((p) => p.cards),
+          board
+        )
         setState((s) => ({
           ...s,
-          equities: result.equities,
+          players: s.players.map((p, i) => ({
+            ...p,
+            equity: result.equities[i],
+          })),
           isCalculating: false,
         }))
       } catch (error) {
@@ -84,7 +91,6 @@ export function usePokerGame() {
 
       const newCommunityCards = [...currentState.communityCards, ...newCards]
 
-      // Trigger equity calculation
       fetchEquity(currentState.players, newCommunityCards)
 
       return {
@@ -102,13 +108,12 @@ export function usePokerGame() {
       communityCards: [],
       street: 'preflop',
       isCalculating: false,
-      equities: undefined,
     })
     setRemainingDeck(newData.deck)
   }, [])
 
   return {
-    ...state,
+    state,
     dealNext,
     reset,
     canDeal: state.street !== 'river',

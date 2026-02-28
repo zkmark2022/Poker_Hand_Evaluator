@@ -1,44 +1,43 @@
 const MIN_EQUITY_TO_DISPLAY_IN_BAR = 12
 
+type PlayerEquity = {
+  name: string
+  equity: number
+}
+
 type Props = {
-  players: Array<{ name: string; equity: number }>
+  players: PlayerEquity[]
   isCalculating: boolean
 }
 
-const PLAYER_COLORS = [
-  { bg: 'bg-blue-500', text: 'text-blue-300' },
-  { bg: 'bg-emerald-500', text: 'text-emerald-300' },
-  { bg: 'bg-amber-500', text: 'text-amber-300' },
-]
+const COLORS = ['bg-blue-500', 'bg-emerald-500', 'bg-amber-500']
 
 export default function EquityBar({ players, isCalculating }: Props) {
+  const total = players.reduce((sum, p) => sum + p.equity, 0)
+
   return (
-    <div className="w-full max-w-lg mx-auto">
-      <div className="flex rounded-full overflow-hidden h-4 shadow-inner">
-        {players.map((p, i) => (
-          <div
-            key={p.name}
-            className={`${PLAYER_COLORS[i % PLAYER_COLORS.length].bg} transition-all duration-700 ease-in-out flex items-center justify-center`}
-            style={{ width: `${p.equity}%` }}
-          >
-            {p.equity > 12 && (
-              <span className="text-white text-xs font-bold truncate px-1">
-                {p.equity.toFixed(1)}%
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-between mt-1">
-        {players.map((p, i) => (
-          <div key={p.name} className="flex items-center gap-1">
+    <div className="w-full">
+      <div className="flex h-8 rounded-lg overflow-hidden bg-gray-800">
+        {players.map((player, index) => {
+          const width = total > 0 ? (player.equity / total) * 100 : 33.33
+          return (
             <div
-              className={`w-2 h-2 rounded-full ${PLAYER_COLORS[i % PLAYER_COLORS.length].bg}`}
-            />
-            <span className={`text-xs ${PLAYER_COLORS[i % PLAYER_COLORS.length].text}`}>
-              {p.name}: {isCalculating ? '…' : `${p.equity.toFixed(1)}%`}
-            </span>
-          </div>
+              key={player.name}
+              className={`${COLORS[index]} flex items-center justify-center transition-all duration-500`}
+              style={{ width: `${width}%` }}
+            >
+              {!isCalculating && player.equity >= MIN_EQUITY_TO_DISPLAY_IN_BAR && (
+                <span className="text-white text-sm font-bold">{player.equity.toFixed(1)}%</span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="flex justify-between mt-2 text-sm text-gray-400">
+        {players.map((player) => (
+          <span key={player.name} className={`${isCalculating ? 'animate-pulse' : ''}`}>
+            {player.name}: {isCalculating ? '...' : `${player.equity.toFixed(1)}%`}
+          </span>
         ))}
       </div>
     </div>

@@ -26,18 +26,17 @@ export default function PlayerHand({ player, position, isCalculating }: Props) {
     >
       <span className="text-white font-semibold text-sm tracking-wide">{player.name}</span>
       <div className="flex gap-1.5">
-        <Card card={player.holeCards[0]} />
-        <Card card={player.holeCards[1]} />
+        <Card card={player.cards[0]} />
+        <Card card={player.cards[1]} />
       </div>
       <div className={`text-lg font-bold ${EQUITY_COLORS[position]}`}>
         {isCalculating ? (
           <span className="animate-pulse">…</span>
-        ) : (
+        ) : player.equity !== undefined ? (
           `${player.equity.toFixed(1)}%`
+        ) : (
+          '—'
         )}
-      </div>
-      <div className="text-xs text-gray-400">
-        W: {player.winProbability.toFixed(1)}% | T: {player.tieProbability.toFixed(1)}%
       </div>
     </div>
   )

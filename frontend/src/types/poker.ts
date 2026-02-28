@@ -1,5 +1,5 @@
-export type Suit = 'spades' | 'hearts' | 'diamonds' | 'clubs'
-export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A'
+export type Suit = 's' | 'h' | 'd' | 'c'
+export type Rank = 'A' | 'K' | 'Q' | 'J' | 'T' | '9' | '8' | '7' | '6' | '5' | '4' | '3' | '2'
 
 export type Card = {
   rank: Rank
@@ -9,12 +9,9 @@ export type Card = {
 export type Street = 'preflop' | 'flop' | 'turn' | 'river'
 
 export type Player = {
-  id: number
   name: string
-  holeCards: [Card, Card]
-  equity: number
-  winProbability: number
-  tieProbability: number
+  cards: Card[]
+  equity?: number
 }
 
 export type GameState = {
@@ -22,17 +19,5 @@ export type GameState = {
   communityCards: Card[]
   street: Street
   isCalculating: boolean
-}
-
-export type EquityRequest = {
-  players: Array<{ hole_cards: string[] }>
-  community_cards: string[]
-}
-
-export type EquityResponse = {
-  players: Array<{
-    win_probability: number
-    tie_probability: number
-    equity: number
-  }>
+  equities?: number[]
 }

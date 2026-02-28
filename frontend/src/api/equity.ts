@@ -1,4 +1,4 @@
-import { Card } from '../types/poker'
+import type { Card } from '../types/poker'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 

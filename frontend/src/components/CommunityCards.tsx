@@ -6,12 +6,22 @@ type Props = {
 }
 
 export default function CommunityCards({ cards }: Props) {
-  const slots = Array.from({ length: 5 }, (_, i) => cards[i])
+  const slots = 5
+  const filledCards = [...cards]
+  while (filledCards.length < slots) {
+    filledCards.push(null as unknown as CardType)
+  }
 
   return (
-    <div className="flex items-center gap-2 justify-center">
-      {slots.map((card, i) => (
-        <Card key={i} card={card} />
+    <div className="flex gap-2">
+      {filledCards.map((card, i) => (
+        <div key={i}>
+          {card ? (
+            <Card card={card} />
+          ) : (
+            <div className="w-12 h-16 rounded-md border-2 border-dashed border-green-700/50 bg-green-900/30" />
+          )}
+        </div>
       ))}
     </div>
   )
