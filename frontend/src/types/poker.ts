@@ -8,10 +8,25 @@ export type Card = {
 
 export type Street = 'preflop' | 'flop' | 'turn' | 'river'
 
+export type WinningHand = {
+  hand: string
+  probability: number
+}
+
+export type PlayerResult = {
+  equity: number
+  currentHand?: string
+  winningHands?: WinningHand[]
+  equityChange?: number
+}
+
 export type Player = {
   name: string
   cards: Card[]
   equity?: number
+  currentHand?: string
+  winningHands?: WinningHand[]
+  equityChange?: number
 }
 
 export type GameState = {

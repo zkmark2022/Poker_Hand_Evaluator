@@ -64,10 +64,18 @@ export function usePokerGame() {
         )
         setState((s) => ({
           ...s,
-          players: s.players.map((p, i) => ({
-            ...p,
-            equity: result.equities[i],
-          })),
+          players: s.players.map((p, i) => {
+            const prevEquity = p.equity
+            const newEquity = result.equities[i]
+            const playerResult = result.players?.[i]
+            return {
+              ...p,
+              equity: newEquity,
+              currentHand: playerResult?.currentHand,
+              winningHands: playerResult?.winningHands,
+              equityChange: prevEquity !== undefined ? newEquity - prevEquity : undefined,
+            }
+          }),
           isCalculating: false,
         }))
       } catch (error) {

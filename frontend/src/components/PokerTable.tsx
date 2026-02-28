@@ -34,7 +34,7 @@ export default function PokerTable() {
           className="relative rounded-[80px] border-8 border-amber-900 shadow-2xl overflow-hidden"
           style={{
             background: 'radial-gradient(ellipse at center, #1a6b3c 60%, #145230 100%)',
-            minHeight: '480px',
+            minHeight: '560px',
           }}
         >
           <div className="absolute inset-4 rounded-[72px] border-2 border-green-700/40 pointer-events-none" />
