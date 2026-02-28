@@ -18,7 +18,7 @@ const RED_SUITS = new Set(['hearts', 'diamonds'])
 export default function Card({ card, faceDown = false, small = false }: Props) {
   const base = small
     ? 'w-8 h-12 rounded text-xs font-bold select-none'
-    : 'w-12 h-18 rounded-md text-sm font-bold select-none'
+    : 'w-12 h-20 rounded-md text-sm font-bold select-none'
 
   if (faceDown || !card) {
     return (

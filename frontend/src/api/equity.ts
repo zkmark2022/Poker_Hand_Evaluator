@@ -1,39 +1,30 @@
-import type { Card, EquityRequest, EquityResponse } from '../types/poker'
+import { Card } from '../types/poker'
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-function cardToString(card: Card): string {
-  const rankMap: Record<string, string> = { '10': 'T' }
-  const rank = rankMap[card.rank] ?? card.rank
-  const suitMap: Record<string, string> = {
-    spades: 's',
-    hearts: 'h',
-    diamonds: 'd',
-    clubs: 'c',
-  }
-  return `${rank}${suitMap[card.suit]}`
+interface EquityResponse {
+  equities: number[]
+  simulations: number
 }
 
 export async function calculateEquity(
-  playerHoleCards: [Card, Card][],
-  communityCards: Card[],
+  players: Card[][],
+  board: Card[]
 ): Promise<EquityResponse> {
-  const body: EquityRequest = {
-    players: playerHoleCards.map((hc) => ({
-      hole_cards: [cardToString(hc[0]), cardToString(hc[1])],
-    })),
-    community_cards: communityCards.map(cardToString),
-  }
-
-  const res = await fetch(`${API_BASE}/api/calculate-equity`, {
+  const toStr = (c: Card) => `${c.rank}${c.suit}`
+  
+  const response = await fetch(`${API_BASE}/api/calculate-equity`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      players: players.map((hand) => hand.map(toStr)),
+      board: board.map(toStr),
+    }),
   })
 
-  if (!res.ok) {
-    throw new Error(`API error ${res.status}: ${await res.text()}`)
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`)
   }
 
-  return res.json() as Promise<EquityResponse>
+  return response.json()
 }

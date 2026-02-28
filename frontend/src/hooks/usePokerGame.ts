@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
-import type { Card, GameState, Player, Rank, Suit, Street } from '../types/poker'
+import { Card, GameState, Street } from '../types/poker'
 import { calculateEquity } from '../api/equity'
 
-const SUITS: Suit[] = ['spades', 'hearts', 'diamonds', 'clubs']
-const RANKS: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+const SUITS = ['s', 'h', 'd', 'c'] as const
+const RANKS = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'] as const
 
-function buildDeck(): Card[] {
+function createDeck(): Card[] {
   const deck: Card[] = []
   for (const suit of SUITS) {
     for (const rank of RANKS) {
@@ -15,104 +15,102 @@ function buildDeck(): Card[] {
   return deck
 }
 
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
+function shuffle<T>(array: T[]): T[] {
+  const arr = [...array]
+  for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
   }
-  return a
+  return arr
 }
 
-function dealInitialState(): { players: Player[]; deck: Card[] } {
-  const deck = shuffle(buildDeck())
-  let cursor = 0
-
-  const take = (): Card => deck[cursor++]
-
-  const players: Player[] = [
-    { id: 0, name: 'Player 1', holeCards: [take(), take()], equity: 33.3, winProbability: 33.3, tieProbability: 0 },
-    { id: 1, name: 'Player 2', holeCards: [take(), take()], equity: 33.3, winProbability: 33.3, tieProbability: 0 },
-    { id: 2, name: 'Player 3', holeCards: [take(), take()], equity: 33.3, winProbability: 33.3, tieProbability: 0 },
+function dealInitialState() {
+  const deck = shuffle(createDeck())
+  const players: Card[][] = [
+    [deck.pop()!, deck.pop()!],
+    [deck.pop()!, deck.pop()!],
+    [deck.pop()!, deck.pop()!],
   ]
-
-  return { players, deck: deck.slice(cursor) }
+  return { players, deck }
 }
 
 const STREET_ORDER: Street[] = ['preflop', 'flop', 'turn', 'river']
-const COMMUNITY_CARDS_PER_STREET: Record<Street, number> = {
+const CARDS_TO_DEAL: Record<Street, number> = {
   preflop: 0,
   flop: 3,
-  turn: 4,
-  river: 5,
+  turn: 1,
+  river: 1,
 }
 
 export function usePokerGame() {
-  const initial = dealInitialState()
+  // Lazy initialization - only compute once on mount
+  const [initialData] = useState(dealInitialState)
   const [state, setState] = useState<GameState>({
-    players: initial.players,
+    players: initialData.players,
     communityCards: [],
     street: 'preflop',
     isCalculating: false,
   })
-  const [remainingDeck, setRemainingDeck] = useState<Card[]>(initial.deck)
+  const [remainingDeck, setRemainingDeck] = useState<Card[]>(initialData.deck)
 
   const fetchEquity = useCallback(
-    async (players: Player[], communityCards: Card[]) => {
+    async (players: Card[][], board: Card[]) => {
       setState((s) => ({ ...s, isCalculating: true }))
       try {
-        const result = await calculateEquity(
-          players.map((p) => p.holeCards),
-          communityCards,
-        )
+        const result = await calculateEquity(players, board)
         setState((s) => ({
           ...s,
+          equities: result.equities,
           isCalculating: false,
-          players: s.players.map((p, i) => ({
-            ...p,
-            equity: result.players[i]?.equity ?? p.equity,
-            winProbability: result.players[i]?.win_probability ?? p.winProbability,
-            tieProbability: result.players[i]?.tie_probability ?? p.tieProbability,
-          })),
         }))
-      } catch {
+      } catch (error) {
+        console.error('Failed to fetch equity:', error)
         setState((s) => ({ ...s, isCalculating: false }))
       }
     },
-    [],
+    []
   )
 
   const dealNext = useCallback(() => {
-    setState((s) => {
-      const currentIdx = STREET_ORDER.indexOf(s.street)
-      if (currentIdx === STREET_ORDER.length - 1) return s
+    setState((currentState) => {
+      const currentIndex = STREET_ORDER.indexOf(currentState.street)
+      if (currentIndex >= STREET_ORDER.length - 1) return currentState
 
-      const nextStreet = STREET_ORDER[currentIdx + 1]
-      const targetCount = COMMUNITY_CARDS_PER_STREET[nextStreet]
-      const cardsNeeded = targetCount - s.communityCards.length
+      const nextStreet = STREET_ORDER[currentIndex + 1]
+      const cardsToDeal = CARDS_TO_DEAL[nextStreet]
 
-      const newCards = remainingDeck.slice(0, cardsNeeded)
-      setRemainingDeck((d) => d.slice(cardsNeeded))
+      const newCards = remainingDeck.slice(0, cardsToDeal)
+      setRemainingDeck((deck) => deck.slice(cardsToDeal))
 
-      const newCommunity = [...s.communityCards, ...newCards]
+      const newCommunityCards = [...currentState.communityCards, ...newCards]
 
-      fetchEquity(s.players, newCommunity)
+      // Trigger equity calculation
+      fetchEquity(currentState.players, newCommunityCards)
 
-      return { ...s, street: nextStreet, communityCards: newCommunity }
+      return {
+        ...currentState,
+        communityCards: newCommunityCards,
+        street: nextStreet,
+      }
     })
   }, [remainingDeck, fetchEquity])
 
   const reset = useCallback(() => {
-    const { players, deck } = dealInitialState()
+    const newData = dealInitialState()
     setState({
-      players,
+      players: newData.players,
       communityCards: [],
       street: 'preflop',
       isCalculating: false,
+      equities: undefined,
     })
-    setRemainingDeck(deck)
-    fetchEquity(players, [])
-  }, [fetchEquity])
+    setRemainingDeck(newData.deck)
+  }, [])
 
-  return { state, dealNext, reset }
+  return {
+    ...state,
+    dealNext,
+    reset,
+    canDeal: state.street !== 'river',
+  }
 }

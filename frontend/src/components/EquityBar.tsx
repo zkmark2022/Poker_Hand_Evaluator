@@ -1,3 +1,5 @@
+const MIN_EQUITY_TO_DISPLAY_IN_BAR = 12
+
 type Props = {
   players: Array<{ name: string; equity: number }>
   isCalculating: boolean
