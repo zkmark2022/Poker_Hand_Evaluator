@@ -1,5 +1,6 @@
 import type { Player } from '../types/poker'
 import Card from './Card'
+import HandPrediction from './HandPrediction'
 
 type Props = {
   player: Player
@@ -20,24 +21,38 @@ const EQUITY_COLORS: Record<string, string> = {
 }
 
 export default function PlayerHand({ player, position, isCalculating }: Props) {
+  const equityChange = player.equityChange
+  
   return (
     <div
-      className={`flex flex-col items-center gap-2 p-3 rounded-xl border ${POSITION_COLORS[position]} backdrop-blur-sm`}
+      className={`flex flex-col items-center gap-1 p-3 rounded-xl border ${POSITION_COLORS[position]} backdrop-blur-sm`}
     >
       <span className="text-white font-semibold text-sm tracking-wide">{player.name}</span>
       <div className="flex gap-1.5">
         <Card card={player.cards[0]} />
         <Card card={player.cards[1]} />
       </div>
-      <div className={`text-lg font-bold ${EQUITY_COLORS[position]}`}>
+      <div className={`text-lg font-bold ${EQUITY_COLORS[position]} flex items-center gap-1`}>
         {isCalculating ? (
           <span className="animate-pulse">…</span>
         ) : player.equity !== undefined ? (
-          `${player.equity.toFixed(1)}%`
+          <>
+            {player.equity.toFixed(1)}%
+            {equityChange !== undefined && equityChange !== 0 && (
+              <span className={`text-xs ${equityChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {equityChange > 0 ? '↑' : '↓'}{Math.abs(equityChange).toFixed(1)}
+              </span>
+            )}
+          </>
         ) : (
           '—'
         )}
       </div>
+      <HandPrediction 
+        currentHand={player.currentHand}
+        winningHands={player.winningHands}
+        isCalculating={isCalculating}
+      />
     </div>
   )
 }

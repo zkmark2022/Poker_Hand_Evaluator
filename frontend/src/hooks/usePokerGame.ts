@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import type { Card, GameState, Street, Player } from '../types/poker'
 import { calculateEquity } from '../api/equity'
 
@@ -32,6 +32,9 @@ function dealInitialState(): { players: Player[]; deck: Card[] } {
     name,
     cards: [deck.pop()!, deck.pop()!],
     equity: undefined,
+    currentHand: undefined,
+    winningHands: undefined,
+    equityChange: undefined,
   }))
   return { players, deck }
 }
@@ -53,6 +56,7 @@ export function usePokerGame() {
     isCalculating: false,
   })
   const [remainingDeck, setRemainingDeck] = useState<Card[]>(initialData.deck)
+  const prevEquities = useRef<number[]>([])
 
   const fetchEquity = useCallback(
     async (players: Player[], board: Card[]) => {
@@ -62,11 +66,24 @@ export function usePokerGame() {
           players.map((p) => p.cards),
           board
         )
+        
+        // Calculate equity changes
+        const changes = result.players.map((p, i) => {
+          const prev = prevEquities.current[i]
+          return prev !== undefined ? p.equity - prev : undefined
+        })
+        
+        // Store current equities for next comparison
+        prevEquities.current = result.players.map(p => p.equity)
+        
         setState((s) => ({
           ...s,
           players: s.players.map((p, i) => ({
             ...p,
-            equity: result.equities[i],
+            equity: result.players[i].equity,
+            currentHand: result.players[i].current_hand,
+            winningHands: result.players[i].winning_hands,
+            equityChange: changes[i],
           })),
           isCalculating: false,
         }))
@@ -103,6 +120,7 @@ export function usePokerGame() {
 
   const reset = useCallback(() => {
     const newData = dealInitialState()
+    prevEquities.current = []
     setState({
       players: newData.players,
       communityCards: [],

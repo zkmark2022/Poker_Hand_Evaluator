@@ -2,9 +2,20 @@ import type { Card } from '../types/poker'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-interface EquityResponse {
-  equities: number[]
+export interface WinningHand {
+  hand: string
+  probability: number
+}
+
+export interface PlayerResult {
+  equity: number
+  current_hand: string
+  winning_hands: WinningHand[]
+}
+
+export interface EquityResponse {
   simulations: number
+  players: PlayerResult[]
 }
 
 export async function calculateEquity(
