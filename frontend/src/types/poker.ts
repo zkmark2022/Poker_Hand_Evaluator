@@ -13,13 +13,6 @@ export type WinningHand = {
   probability: number
 }
 
-export type PlayerResult = {
-  equity: number
-  currentHand?: string
-  winningHands?: WinningHand[]
-  equityChange?: number
-}
-
 export type Player = {
   name: string
   cards: Card[]
@@ -34,5 +27,4 @@ export type GameState = {
   communityCards: Card[]
   street: Street
   isCalculating: boolean
-  equities?: number[]
 }

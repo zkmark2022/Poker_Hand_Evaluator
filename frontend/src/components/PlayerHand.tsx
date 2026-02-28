@@ -20,42 +20,39 @@ const EQUITY_COLORS: Record<string, string> = {
   'bottom-right': 'text-amber-300',
 }
 
-function EquityChange({ change }: { change?: number }) {
-  if (change === undefined || Math.abs(change) < 0.05) return null
-  if (change > 0) {
-    return <span className="text-green-400 text-xs font-bold">↑ +{change.toFixed(1)}%</span>
-  }
-  return <span className="text-red-400 text-xs font-bold">↓ {change.toFixed(1)}%</span>
-}
-
 export default function PlayerHand({ player, position, isCalculating }: Props) {
+  const equityChange = player.equityChange
+  
   return (
     <div
-      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border ${POSITION_COLORS[position]} backdrop-blur-sm min-w-[130px]`}
+      className={`flex flex-col items-center gap-1 p-3 rounded-xl border ${POSITION_COLORS[position]} backdrop-blur-sm`}
     >
       <span className="text-white font-semibold text-sm tracking-wide">{player.name}</span>
       <div className="flex gap-1.5">
         <Card card={player.cards[0]} />
         <Card card={player.cards[1]} />
       </div>
-      <div className={`flex items-center gap-1.5 text-lg font-bold ${EQUITY_COLORS[position]}`}>
+      <div className={`text-lg font-bold ${EQUITY_COLORS[position]} flex items-center gap-1`}>
         {isCalculating ? (
           <span className="animate-pulse">…</span>
         ) : player.equity !== undefined ? (
           <>
-            <span>{player.equity.toFixed(1)}%</span>
-            <EquityChange change={player.equityChange} />
+            {player.equity.toFixed(1)}%
+            {equityChange !== undefined && equityChange !== 0 && (
+              <span className={`text-xs ${equityChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {equityChange > 0 ? '↑' : '↓'}{Math.abs(equityChange).toFixed(1)}
+              </span>
+            )}
           </>
         ) : (
           '—'
         )}
       </div>
-      {!isCalculating && (
-        <HandPrediction
-          currentHand={player.currentHand}
-          winningHands={player.winningHands}
-        />
-      )}
+      <HandPrediction 
+        currentHand={player.currentHand}
+        winningHands={player.winningHands}
+        isCalculating={isCalculating}
+      />
     </div>
   )
 }

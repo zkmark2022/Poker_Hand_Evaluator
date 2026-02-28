@@ -1,27 +1,29 @@
-import type { Card, WinningHand } from '../types/poker'
+import type { Card } from '../types/poker'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-type PlayerEquityResult = {
+export interface WinningHand {
+  hand: string
+  probability: number
+}
+
+export interface PlayerResult {
   equity: number
-  currentHand?: string
-  winningHands?: WinningHand[]
+  current_hand: string
+  winning_hands: WinningHand[]
 }
 
-type EquityResponse = {
-  equities: number[]
+export interface EquityResponse {
   simulations: number
-  players?: PlayerEquityResult[]
+  players: PlayerResult[]
 }
-
-export type { PlayerEquityResult }
 
 export async function calculateEquity(
   players: Card[][],
   board: Card[]
 ): Promise<EquityResponse> {
   const toStr = (c: Card) => `${c.rank}${c.suit}`
-
+  
   const response = await fetch(`${API_BASE}/api/calculate-equity`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

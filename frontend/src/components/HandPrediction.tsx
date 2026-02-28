@@ -3,37 +3,45 @@ import type { WinningHand } from '../types/poker'
 type Props = {
   currentHand?: string
   winningHands?: WinningHand[]
+  isCalculating: boolean
 }
 
-// Maps hand name substring to Tailwind color class by strength tier
-function handColor(hand: string): string {
-  const h = hand.toLowerCase()
-  if (h.includes('royal flush') || h.includes('straight flush')) return 'text-yellow-400'
-  if (h.includes('four of a kind') || h.includes('full house')) return 'text-purple-400'
-  if (h.includes('flush') || h.includes('straight')) return 'text-green-400'
-  if (h.includes('three of a kind') || h.includes('two pair')) return 'text-blue-400'
-  return 'text-gray-400'
+const HAND_COLORS: Record<string, string> = {
+  'High Card': 'text-gray-400',
+  'One Pair': 'text-gray-400',
+  'Two Pair': 'text-blue-400',
+  'Three of a Kind': 'text-blue-400',
+  'Straight': 'text-green-400',
+  'Flush': 'text-green-400',
+  'Full House': 'text-purple-400',
+  'Four of a Kind': 'text-purple-400',
+  'Straight Flush': 'text-yellow-400',
+  'Royal Flush': 'text-yellow-400',
 }
 
-export default function HandPrediction({ currentHand, winningHands }: Props) {
-  const topHands = winningHands?.slice(0, 3) ?? []
+export default function HandPrediction({ currentHand, winningHands, isCalculating }: Props) {
+  if (isCalculating) {
+    return <div className="text-xs text-gray-500 animate-pulse">Calculating...</div>
+  }
 
-  if (!currentHand && topHands.length === 0) return null
+  if (!currentHand) {
+    return null
+  }
+
+  const handColor = HAND_COLORS[currentHand] || 'text-gray-400'
 
   return (
-    <div className="w-full mt-0.5">
-      {currentHand && (
-        <div className={`text-center text-xs font-bold uppercase tracking-wide ${handColor(currentHand)}`}>
-          {currentHand}
-        </div>
-      )}
-      {topHands.length > 0 && (
-        <div className="mt-1 space-y-0.5 border-t border-white/10 pt-1">
-          {topHands.map((wh) => (
-            <div key={wh.hand} className="flex justify-between items-center text-[10px] gap-2">
-              <span className={`truncate ${handColor(wh.hand)}`}>{wh.hand}</span>
-              <span className="text-gray-400 shrink-0">{(wh.probability * 100).toFixed(1)}%</span>
-            </div>
+    <div className="text-center mt-1">
+      <div className={`text-xs font-semibold ${handColor}`}>
+        {currentHand}
+      </div>
+      {winningHands && winningHands.length > 0 && (
+        <div className="text-[10px] text-gray-500 mt-0.5">
+          {winningHands.slice(0, 2).map((wh, i) => (
+            <span key={wh.hand}>
+              {i > 0 && ' · '}
+              {wh.hand}: {wh.probability.toFixed(0)}%
+            </span>
           ))}
         </div>
       )}
