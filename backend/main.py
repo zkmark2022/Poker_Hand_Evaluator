@@ -24,19 +24,31 @@ class EquityRequest(BaseModel):
     iterations: int = 1000
 
 
+class WinningHandStat(BaseModel):
+    hand: str
+    probability: float
+
+
+class PlayerEquity(BaseModel):
+    equity: float
+    currentHand: str
+    winningHands: list[WinningHandStat]
+
+
 class EquityResponse(BaseModel):
     equities: list[float]
     simulations: int
+    players: list[PlayerEquity]
 
 
 @app.post("/api/calculate-equity", response_model=EquityResponse)
 def calculate_equity(payload: EquityRequest) -> EquityResponse:
     try:
-        equities, simulations = simulate_equity(
+        equities, simulations, players = simulate_equity(
             players=payload.players,
             board=payload.board,
             iterations=min(payload.iterations, 10000),
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return EquityResponse(equities=equities, simulations=simulations)
+    return EquityResponse(equities=equities, simulations=simulations, players=players)
