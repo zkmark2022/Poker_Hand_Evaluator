@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --color-felt-green: #1a6b3c;
+  --color-felt-dark: #145230;
+  --color-felt-border: #0d3d24;
+  --color-card-red: #dc2626;
+  --color-card-black: #1a1a1a;
+}
