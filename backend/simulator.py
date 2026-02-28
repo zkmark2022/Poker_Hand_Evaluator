@@ -19,7 +19,7 @@ def simulate_equity(
     iterations: int = 1000,
     rng: random.Random | None = None,
 ) -> tuple[list[float], int]:
-    if len(players) != 3:
+    if not (2 <= len(players) <= 10):
         raise ValueError("exactly three players are required")
     if iterations <= 0:
         raise ValueError("iterations must be positive")
@@ -37,7 +37,7 @@ def simulate_equity(
         raise ValueError("duplicate cards are not allowed")
 
     random_source = rng or random.Random()
-    wins = [0.0, 0.0, 0.0]
+    wins = [0.0] * len(players)
     cards_needed = 5 - len(normalized_board)
 
     for _ in range(iterations):

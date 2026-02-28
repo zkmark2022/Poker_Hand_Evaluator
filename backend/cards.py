@@ -40,10 +40,10 @@ class Deck:
     def __init__(self, excluded: list[Card] | None = None) -> None:
         excluded_set = set(excluded or [])
         self.cards = [
-            Card(rank=rank, suit=suit)
+            card
             for suit in SUITS
             for rank in RANKS
-            if Card(rank=rank, suit=suit) not in excluded_set
+            if (card := Card(rank=rank, suit=suit)) not in excluded_set
         ]
 
     def shuffle(self, rng: random.Random | None = None) -> None:
@@ -54,6 +54,4 @@ class Deck:
             raise ValueError("count must be non-negative")
         if count > len(self.cards):
             raise ValueError("not enough cards in deck")
-        dealt = self.cards[:count]
-        del self.cards[:count]
-        return dealt
+        return [self.cards.pop() for _ in range(count)]
