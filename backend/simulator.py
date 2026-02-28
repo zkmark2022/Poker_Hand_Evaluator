@@ -70,8 +70,8 @@ def simulate_equity(
         player_results.append(
             {
                 "equity": equity,
-                "currentHand": evaluate_current_hand(normalized_players[index], normalized_board),
-                "winningHands": top_winning_hands,
+                "current_hand": evaluate_current_hand(normalized_players[index], normalized_board),
+                "winning_hands": top_winning_hands,
             }
         )
 

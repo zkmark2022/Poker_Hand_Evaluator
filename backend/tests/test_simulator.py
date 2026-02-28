@@ -13,10 +13,10 @@ def test_complete_board_returns_deterministic_result() -> None:
     assert simulations == 100
     assert equities == [100.0, 0.0, 0.0]
     assert players[0]["equity"] == 100.0
-    assert players[0]["currentHand"] == "One Pair"
-    assert players[0]["winningHands"] == [{"hand": "One Pair", "probability": 100.0}]
-    assert players[1]["winningHands"] == []
-    assert players[2]["winningHands"] == []
+    assert players[0]["current_hand"] == "One Pair"
+    assert players[0]["winning_hands"] == [{"hand": "One Pair", "probability": 100.0}]
+    assert players[1]["winning_hands"] == []
+    assert players[2]["winning_hands"] == []
 
 
 def test_partial_board_returns_valid_distribution() -> None:
@@ -30,6 +30,6 @@ def test_partial_board_returns_valid_distribution() -> None:
     assert round(sum(equities), 2) == 100.0
     assert equities[0] > equities[1]
     assert len(players) == 3
-    assert players[0]["currentHand"] == "Two Pair"
-    assert len(players[0]["winningHands"]) <= 3
-    assert all("hand" in item and "probability" in item for item in players[0]["winningHands"])
+    assert players[0]["current_hand"] == "Two Pair"
+    assert len(players[0]["winning_hands"]) <= 3
+    assert all("hand" in item and "probability" in item for item in players[0]["winning_hands"])
